@@ -14,16 +14,15 @@
 ;;;;;;;;;;;;;;;;;;;;;;
 
 (def nrows 4)
-(def ncols 5)
+(def ncols 6)
 
 (def α (/ π 12))                        ; curvature of the columns
 (def β (/ π 36))                        ; curvature of the rows
 (def centerrow (- nrows 3))             ; controls front-back tilt
-(def centercol 3)                       ; controls left-right tilt / tenting (higher number is more tenting)
+(def centercol 2)                       ; controls left-right tilt / tenting (higher number is more tenting)
 (def tenting-angle (/ π 12))            ; or, change this for more precise tenting control
 (def column-style 
-  (if (> nrows 5) :orthographic :standard))  ; options include :standard, :orthographic, and :fixed
-; (def column-style :fixed)
+  (if (> nrows 5) :orthographic :standard))  ; options include :standard, :orthographic
 
 (defn column-offset [column] (cond
   (= column 2) [0 2.82 -4.5]
@@ -32,7 +31,7 @@
 
 (def thumb-offsets [6 -3 7])
 
-(def keyboard-z-offset 9)               ; controls overall height; original=9 with centercol=3; use 16 for centercol=2
+(def keyboard-z-offset 16)              ; controls overall height; original=9 with centercol=3; use 16 for centercol=2
 
 (def extra-width 2.5)                   ; extra space between the base of keys; original= 2
 (def extra-height 1.0)                  ; original= 0.5
@@ -40,16 +39,6 @@
 (def wall-z-offset -15)                 ; length of the first downward-sloping part of the wall (negative)
 (def wall-xy-offset 5)                  ; offset in the x and/or y direction for the first downward-sloping part of the wall (negative)
 (def wall-thickness 2)                  ; wall thickness parameter; originally 5
-
-;; Settings for column-style == :fixed 
-;; The defaults roughly match Maltron settings
-;;   http://patentimages.storage.googleapis.com/EP0219944A2/imgf0002.png
-;; Fixed-z overrides the z portion of the column ofsets above.
-;; NOTE: THIS DOESN'T WORK QUITE LIKE I'D HOPED.
-(def fixed-angles [(deg2rad 10) (deg2rad 10) 0 0 0 (deg2rad -15) (deg2rad -15)])  
-(def fixed-x [-41.5 -22.5 0 20.3 41.4 65.5 89.6])  ; relative to the middle finger
-(def fixed-z [12.1    8.3 0  5   10.7 14.5 17.5])  
-(def fixed-tenting (deg2rad 0))  
 
 ;;;;;;;;;;;;;;;;;;;;;;;
 ;; General variables ;;
@@ -171,19 +160,9 @@
                                 (translate-fn [0 0 row-radius])
                                 (rotate-y-fn  column-angle)
                                 (translate-fn [(- (* (- column centercol) column-x-delta)) 0 column-z-delta])
-                                (translate-fn (column-offset column)))
-        placed-shape-fixed (->> shape
-                                (rotate-y-fn  (nth fixed-angles column))
-                                (translate-fn [(nth fixed-x column) 0 (nth fixed-z column)])
-                                (translate-fn [0 0 (- (+ row-radius (nth fixed-z column)))])
-                                (rotate-x-fn  (* α (- centerrow row)))      
-                                (translate-fn [0 0 (+ row-radius (nth fixed-z column))])
-                                (rotate-y-fn  fixed-tenting)
-                                (translate-fn [0 (second (column-offset column)) 0])
-                                )]
+                                (translate-fn (column-offset column)))]
     (->> (case column-style
           :orthographic placed-shape-ortho 
-          :fixed        placed-shape-fixed
                         placed-shape)
          (rotate-y-fn  tenting-angle)
          (translate-fn [0 0 keyboard-z-offset]))))
@@ -220,6 +199,14 @@
                          (not= row lastrow))]
            (->> single-plate
                 (key-place column row)))))
+
+(def key-holes-b
+  (union
+    key-holes
+    (key-place -1 0 single-plate)
+    (key-place -1 1 single-plate)
+    (key-place -1 2 single-plate)
+   ))
 
 (def caps
   (apply union
@@ -694,19 +681,22 @@
 
 (def model-right (difference 
                    (union
-                    key-holes
-                    connectors
+                    key-holes-b
+                    connectors ; connects key holes
                     thumb
-                    thumb-connectors
-                    (difference (union case-walls 
-                                       screw-insert-outers 
-                                       teensy-holder
-                                       usb-holder)
-                                rj9-space 
-                                usb-holder-hole
-                                screw-insert-holes)
-                    rj9-holder
-                    wire-posts
+                    thumb-connectors 
+                    (difference (union 
+                                  case-walls 
+                                  screw-insert-outers 
+                                  teensy-holder
+                                  ; usb-holder
+                                  )
+                                ; rj9-space 
+                                ; usb-holder-hole
+                                screw-insert-holes
+                                )
+                    ; rj9-holder
+                    ; wire-posts
                     ; thumbcaps
                     ; caps
                     )
