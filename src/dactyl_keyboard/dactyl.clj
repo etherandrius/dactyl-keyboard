@@ -556,6 +556,7 @@
      (left-key-place cornerrow -1 (translate (wall-locate3 -1 0) web-post))
      (thumb-tl-place thumb-post-tl))
    (hull
+     (key-wall-brace -1 lastrow 0 -1 web-post-bl 0 lastrow 0.5 -1 web-post-br)
      (left-key-place cornerrow -1 web-post)
      (left-key-place cornerrow -1 (translate (wall-locate1 -1 0) web-post))
      (key-place 0 cornerrow web-post-bl)
