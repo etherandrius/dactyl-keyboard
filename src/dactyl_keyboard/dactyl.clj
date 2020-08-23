@@ -22,8 +22,7 @@
 (def centercol 2.5)                       ; controls left-right tilt / tenting (higher number is more tenting)
 (def tenting-angle (/ π 12))            ; or, change this for more precise tenting control
 (def column-style 
-  (if (> nrows 5) :orthographic :standard))  ; options include :standard, :orthographic, and :fixed
-; (def column-style :fixed)
+  (if (> nrows 5) :orthographic :standard))  ; options include :standard, :orthographic
 
 (defn column-offset [column] (cond
   (= column 2) [0 2.82 -4.5]
@@ -40,16 +39,6 @@
 (def wall-z-offset -15)                 ; length of the first downward-sloping part of the wall (negative)
 (def wall-xy-offset 5)                  ; offset in the x and/or y direction for the first downward-sloping part of the wall (negative)
 (def wall-thickness 2)                  ; wall thickness parameter; originally 5
-
-;; Settings for column-style == :fixed 
-;; The defaults roughly match Maltron settings
-;;   http://patentimages.storage.googleapis.com/EP0219944A2/imgf0002.png
-;; Fixed-z overrides the z portion of the column ofsets above.
-;; NOTE: THIS DOESN'T WORK QUITE LIKE I'D HOPED.
-(def fixed-angles [(deg2rad 10) (deg2rad 10) 0 0 0 (deg2rad -15) (deg2rad -15)])  
-(def fixed-x [-41.5 -22.5 0 20.3 41.4 65.5 89.6])  ; relative to the middle finger
-(def fixed-z [12.1    8.3 0  5   10.7 14.5 17.5])  
-(def fixed-tenting (deg2rad 0))  
 
 ;;;;;;;;;;;;;;;;;;;;;;;
 ;; General variables ;;
@@ -141,7 +130,7 @@
 ;; Placement Functions ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def columns (range 0 ncols))
+(def columns (range -1 ncols))
 (def rows (range 0 nrows))
 
 (def cap-top-height (+ plate-thickness sa-profile-key-height))
@@ -171,19 +160,9 @@
                                 (translate-fn [0 0 row-radius])
                                 (rotate-y-fn  column-angle)
                                 (translate-fn [(- (* (- column centercol) column-x-delta)) 0 column-z-delta])
-                                (translate-fn (column-offset column)))
-        placed-shape-fixed (->> shape
-                                (rotate-y-fn  (nth fixed-angles column))
-                                (translate-fn [(nth fixed-x column) 0 (nth fixed-z column)])
-                                (translate-fn [0 0 (- (+ row-radius (nth fixed-z column)))])
-                                (rotate-x-fn  (* α (- centerrow row)))      
-                                (translate-fn [0 0 (+ row-radius (nth fixed-z column))])
-                                (rotate-y-fn  fixed-tenting)
-                                (translate-fn [0 (second (column-offset column)) 0])
-                                )]
+                                (translate-fn (column-offset column)))]
     (->> (case column-style
           :orthographic placed-shape-ortho 
-          :fixed        placed-shape-fixed
                         placed-shape)
          (rotate-y-fn  tenting-angle)
          (translate-fn [0 0 keyboard-z-offset]))))
@@ -219,6 +198,14 @@
                          (not= row lastrow))]
            (->> single-plate
                 (key-place column row)))))
+
+(def key-holes-b
+  (union
+    key-holes
+    (key-place -1 0 single-plate)
+    (key-place -1 1 single-plate)
+    (key-place -1 2 single-plate)
+   ))
 
 (def caps
   (apply union
@@ -257,7 +244,7 @@
   (apply union
          (concat
           ;; Row connections
-          (for [column (range 0 (dec ncols))
+          (for [column (range -1 (dec ncols))
                 row (range 0 lastrow)]
             (triangle-hulls
              (key-place (inc column) row web-post-tl)
@@ -275,7 +262,7 @@
              (key-place column (inc row) web-post-tr)))
 
           ;; Diagonal connections
-          (for [column (range 0 (dec ncols))
+          (for [column (range -1 (dec ncols))
                 row (range 0 cornerrow)]
             (triangle-hulls
              (key-place column row web-post-br)
@@ -496,7 +483,7 @@
 (def left-wall-z-offset  3)
 
 (defn left-key-position [row direction]
-  (map - (key-position 0 row [(* mount-width -0.5) (* direction mount-height 0.5) 0]) [left-wall-x-offset 0 left-wall-z-offset]) )
+  (map - (key-position -1 row [(* mount-width -0.5) (* direction mount-height 0.5) 0]) [left-wall-x-offset 0 left-wall-z-offset]) )
 
 (defn left-key-place [row direction shape]
   (translate (left-key-position row direction) shape))
@@ -531,8 +518,8 @@
 (def case-walls
   (union
    ; back wall
-   (for [x (range 0 ncols)] (key-wall-brace x 0 0 1 web-post-tl x       0 0 1 web-post-tr))
-   (for [x (range 1 ncols)] (key-wall-brace x 0 0 1 web-post-tl (dec x) 0 0 1 web-post-tr))
+   (for [x (range -1 ncols)] (key-wall-brace x 0 0 1 web-post-tl x       0 0 1 web-post-tr))
+   (for [x (range 0 ncols)] (key-wall-brace x 0 0 1 web-post-tl (dec x) 0 0 1 web-post-tr))
    (key-wall-brace lastcol 0 0 1 web-post-tr lastcol 0 1 0 web-post-tr)
    ; right wall
    (for [y (range 0 lastrow)] (key-wall-brace lastcol y 1 0 web-post-tr lastcol y       1 0 web-post-br))
@@ -540,16 +527,16 @@
    (key-wall-brace lastcol cornerrow 0 -1 web-post-br lastcol cornerrow 1 0 web-post-br)
    ; left wall
    (for [y (range 0 lastrow)] (union (wall-brace (partial left-key-place y 1)       -1 0 web-post (partial left-key-place y -1) -1 0 web-post)
-                                     (hull (key-place 0 y web-post-tl)
-                                           (key-place 0 y web-post-bl)
+                                     (hull (key-place -1 y web-post-tl)
+                                           (key-place -1 y web-post-bl)
                                            (left-key-place y  1 web-post)
                                            (left-key-place y -1 web-post))))
    (for [y (range 1 lastrow)] (union (wall-brace (partial left-key-place (dec y) -1) -1 0 web-post (partial left-key-place y  1) -1 0 web-post)
-                                     (hull (key-place 0 y       web-post-tl)
-                                           (key-place 0 (dec y) web-post-bl)
+                                     (hull (key-place -1 y       web-post-tl)
+                                           (key-place -1 (dec y) web-post-bl)
                                            (left-key-place y        1 web-post)
                                            (left-key-place (dec y) -1 web-post))))
-   (wall-brace (partial key-place 0 0) 0 1 web-post-tl (partial left-key-place 0 1) 0 1 web-post)
+   (wall-brace (partial key-place -1 0) 0 1 web-post-tl (partial left-key-place 0 1) 0 1 web-post)
    (wall-brace (partial left-key-place 0 1) 0 1 web-post (partial left-key-place 0 1) -1 0 web-post)
    ; front wall
    (key-wall-brace lastcol 0 0 1 web-post-tr lastcol 0 1 0 web-post-tr)
@@ -592,6 +579,7 @@
      (left-key-place cornerrow -1 (translate (wall-locate3 -1 0) web-post))
      (thumb-tl-place thumb-post-tl))
    (hull
+     (key-wall-brace -1 lastrow 0 -1 web-post-bl 0 lastrow 0.5 -1 web-post-br)
      (left-key-place cornerrow -1 web-post)
      (left-key-place cornerrow -1 (translate (wall-locate1 -1 0) web-post))
      (key-place 0 cornerrow web-post-bl)
@@ -634,8 +622,8 @@
 (def teensy-holder-height (+ 6 teensy-width))
 (def teensy-offset-height 5)
 (def teensy-holder-top-length 18)
-(def teensy-top-xy (key-position 0 (- centerrow 1) (wall-locate3 -1 0)))
-(def teensy-bot-xy (key-position 0 (+ centerrow 1) (wall-locate3 -1 0)))
+(def teensy-top-xy (key-position -1 (- centerrow 1) (wall-locate3 -1 0)))
+(def teensy-bot-xy (key-position -1 (+ centerrow 1) (wall-locate3 -1 0)))
 (def teensy-holder-length (- (second teensy-top-xy) (second teensy-bot-xy)))
 (def teensy-holder-offset (/ teensy-holder-length -2))
 (def teensy-holder-top-offset (- (/ teensy-holder-top-length 2) teensy-holder-length))
@@ -718,19 +706,22 @@
 
 (def model-right (difference 
                    (union
-                    key-holes
-                    connectors
+                    key-holes-b
+                    connectors ; connects key holes
                     thumb
-                    thumb-connectors
-                    (difference (union case-walls 
-                                       screw-insert-outers 
-                                       teensy-holder
-                                       usb-holder)
-                                rj9-space 
-                                usb-holder-hole
-                                screw-insert-holes)
-                    rj9-holder
-                    wire-posts
+                    thumb-connectors 
+                    (difference (union 
+                                  case-walls 
+                                  screw-insert-outers 
+                                  teensy-holder
+                                  ; usb-holder
+                                  )
+                                ; rj9-space 
+                                ; usb-holder-hole
+                                screw-insert-holes
+                                )
+                    ; rj9-holder
+                    ; wire-posts
                     ; thumbcaps
                     ; caps
                     )
