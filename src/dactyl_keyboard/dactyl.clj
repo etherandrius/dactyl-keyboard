@@ -558,7 +558,6 @@
    (for [y (range 1 lastrow)] (key-wall-brace lastcol (dec y) 1 0 web-post-br lastcol y 1 0 web-post-tr))
    (key-wall-brace lastcol cornerrow 0 -1 web-post-br lastcol cornerrow 1 0 web-post-br)
    ; left wall
-   
    (for [y (range 0 lastrow)] (union 
                                 (wall-brace (partial left-key-place y 1)       -1 0 web-post (partial left-key-place y -1) -1 0 web-post)
                                      (hull (key-place -1 y web-post-tl)
@@ -577,20 +576,12 @@
    ; bottom left corner
    (wall-brace (partial key-place -1 2) 0 -1 web-post-bl (partial left-key-place 2 -1) 0 -1 web-post)
    (wall-brace (partial left-key-place 2 -1) 0 -1 web-post (partial left-key-place 2 -1) -1 0 web-post)
-   ; (wall-brace (partial left-key-place 2 0) -1 0 web-post-bl (partial key-place -1 2) -1 0 web-post-bl)
    ; front wall - right
    (key-wall-brace lastcol 0 0 1 web-post-tr lastcol 0 1 0 web-post-tr)
    (key-wall-brace 3 lastrow   0 -1 web-post-bl 3 lastrow 0.5 -1 web-post-br)
    (key-wall-brace 3 lastrow 0.5 -1 web-post-br 4 cornerrow 1 -1 web-post-bl)
-
    ; front wall - left
-   ; column row
-     
    (key-wall-brace -1 2   0 -1 web-post-bl -1 2 -1 -1 web-post-br)
-
-   ; (wall-brace (partial thumb-ml-place) -0.3 1 web-post-tr 
-   ;             (partial key-place -1 2) -1 -1 web-post-br)
-
    (triangle-hulls
      (key-place -1 2 web-post-br)
      (key-place 0 2 web-post-bl)
@@ -734,7 +725,7 @@
    (union (cylinder [bottom-radius top-radius] height)
           (translate [0 0 (/ height 2)] (sphere top-radius))))
 
-(defn screw-insert [column row bottom-radius top-radius height] 
+(defn screw-insert [column row bottom-radius top-radius height dx dy] 
   (let [shift-right   (= column lastcol)
         shift-left    (= column 0)
         shift-up      (and (not (or shift-right shift-left)) (= row 0))
@@ -746,15 +737,16 @@
         ]
     (->> (screw-insert-shape bottom-radius top-radius height)
          (translate [(first position) (second position) (/ height 2)])
+         (translate [dx dy 0])
     )))
 
 (defn screw-insert-all-shapes [bottom-radius top-radius height]
-  (union (screw-insert 0 0         bottom-radius top-radius height)
-         (screw-insert 0 lastrow   bottom-radius top-radius height)
-         (screw-insert -0.1 4.4 bottom-radius top-radius height)
-         (screw-insert 3 0         bottom-radius top-radius height)
-         (screw-insert (- lastcol 0.15) 2.35   bottom-radius top-radius height)
-         (screw-insert (- lastcol 0.15) -0.35   bottom-radius top-radius height)
+  (union (screw-insert 0 0         bottom-radius top-radius height 14 15)
+         (screw-insert 0 lastrow   bottom-radius top-radius height 19 -1)
+         (screw-insert -0.1 4.4 bottom-radius top-radius height 2 6)
+         ; (screw-insert 3 0         bottom-radius top-radius height 0 0)
+         (screw-insert (- lastcol 0.15) 2.35   bottom-radius top-radius height 0 0)
+         (screw-insert (- lastcol 0.15) -0.35   bottom-radius top-radius height 0 0)
          ))
 (def screw-insert-height 3.8)
 (def screw-insert-bottom-radius (/ 5.31 2))
