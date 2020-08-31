@@ -24,9 +24,17 @@
 (def column-style 
   (if (> nrows 5) :orthographic :standard))  ; options include :standard, :orthographic
 
+
+(defn tent-column [column] (
+  cond
+  (>= column 4) (/ pi 15)
+  :else 0))
+
+
 (defn column-offset [column] (cond
   (= column 2) [0 2.82 -4.5]
-  (>= column 4) [0 -12 5.64]            ; original [0 -5.8 5.64]
+  ; (>= column 4) [0 -12 5.64]            ; original [0 -5.8 5.64]
+  (>= column 4) [0 -32 5.64]            ; original [0 -5.8 5.64]
   :else [0 0 0]))
 
 (def thumb-offsets [6 -3 7])
@@ -39,6 +47,7 @@
 (def wall-z-offset -15)                 ; length of the first downward-sloping part of the wall (negative)
 (def wall-xy-offset 5)                  ; offset in the x and/or y direction for the first downward-sloping part of the wall (negative)
 (def wall-thickness 2)                  ; wall thickness parameter; originally 5
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;
 ;; General variables ;;
@@ -134,20 +143,23 @@
 (def rows (range 0 nrows))
 
 (def cap-top-height (+ plate-thickness sa-profile-key-height))
+
 (def row-radius (+ (/ (/ (+ mount-height extra-height) 2)
                       (Math/sin (/ α 2)))
                    cap-top-height))
 (def column-radius (+ (/ (/ (+ mount-width extra-width) 2)
                          (Math/sin (/ β 2)))
                       cap-top-height))
+
 (def column-x-delta (+ -1 (- (* column-radius (Math/sin β)))))
 (def column-base-angle (* β (- centercol 2)))
+
 
 (defn apply-key-geometry [translate-fn rotate-x-fn rotate-y-fn column row shape]
   (let [column-angle (* β (- centercol column))   
         placed-shape (->> shape
                           (translate-fn [0 0 (- row-radius)])
-                          (rotate-x-fn  (* α (- centerrow row)))      
+                          (rotate-x-fn  (+ (* α (- centerrow row)) (tent-column column)))      
                           (translate-fn [0 0 row-radius])
                           (translate-fn [0 0 (- column-radius)])
                           (rotate-y-fn  column-angle)
@@ -251,6 +263,20 @@
              (key-place column row web-post-tr)
              (key-place (inc column) row web-post-bl)
              (key-place column row web-post-br)))
+
+          ; (for [column (range -1 (dec ncols))
+          ;       row (range 0 lastrow)]
+          ;   (cond
+          ;     (column == 3) ((triangle-hulls
+          ;    (key-place (inc 2) row web-post-tl)
+          ;    (key-place 2 row web-post-tr)
+          ;    (key-place (inc 2) row web-post-bl)
+          ;    (key-place 2 row web-post-br)))
+          ;     :else (triangle-hulls
+          ;    (key-place (inc column) row web-post-tl)
+          ;    (key-place column row web-post-tr)
+          ;    (key-place (inc column) row web-post-bl)
+          ;    (key-place column row web-post-br))))
 
           ;; Column connections
           (for [column columns
@@ -796,8 +822,8 @@
                                 )
                     ; rj9-holder
                     ; wire-posts
-                    ; thumbcaps
-                    ; caps
+                    thumbcaps
+                    caps
                     )
                    (translate [0 0 -20] (cube 350 350 40)) 
                   ))
