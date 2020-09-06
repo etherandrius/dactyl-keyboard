@@ -41,7 +41,8 @@
 
 (def keyboard-z-offset 16)              ; controls overall height; original=9 with centercol=3; use 16 for centercol=2
 
-(def extra-width 2.5)                   ; extra space between the base of keys; original= 2
+; (def extra-width 2.5)                   ; extra space between the base of keys; original= 2
+(def extra-width 0.5)
 (def extra-height 1.0)                  ; original= 0.5
 
 (def wall-z-offset -15)                 ; length of the first downward-sloping part of the wall (negative)
@@ -63,6 +64,7 @@
 
 (def keyswitch-height 14.4) ;; Was 14.1, then 14.25
 (def keyswitch-width 14.4)
+; (def keyswitch-width 16.4)
 
 (def sa-profile-key-height 12.7)
 
@@ -255,8 +257,16 @@
 (def connectors
   (apply union
          (concat
-          ;; Row connections
-          (for [column (range -1 (dec ncols))
+          ;; Row connections -1 1,2,3, 4 5
+          (for [column (range -1 1)
+                row (range 0 lastrow)]
+            (triangle-hulls
+             (key-place (inc column) row web-post-tl)
+             (key-place column row web-post-tr)
+             (key-place (inc column) row web-post-bl)
+             (key-place column row web-post-br)))
+
+          (for [column (range 4 (dec ncols))
                 row (range 0 lastrow)]
             (triangle-hulls
              (key-place (inc column) row web-post-tl)
@@ -288,13 +298,28 @@
              (key-place column (inc row) web-post-tr)))
 
           ;; Diagonal connections
-          (for [column (range -1 (dec ncols))
+          (for [column (range -1 1)
                 row (range 0 cornerrow)]
             (triangle-hulls
              (key-place column row web-post-br)
              (key-place column (inc row) web-post-tr)
              (key-place (inc column) row web-post-bl)
-             (key-place (inc column) (inc row) web-post-tl))))))
+             (key-place (inc column) (inc row) web-post-tl)))
+          (for [column (range 4 (dec ncols))
+                row (range 0 cornerrow)]
+            (triangle-hulls
+             (key-place column row web-post-br)
+             (key-place column (inc row) web-post-tr)
+             (key-place (inc column) row web-post-bl)
+             (key-place (inc column) (inc row) web-post-tl)))
+          ; (for [column (range -1 (dec ncols))
+          ;       row (range 0 cornerrow)]
+          ;   (triangle-hulls
+          ;    (key-place column row web-post-br)
+          ;    (key-place column (inc row) web-post-tr)
+          ;    (key-place (inc column) row web-post-bl)
+          ;    (key-place (inc column) (inc row) web-post-tl)))
+          )))
 
 ;;;;;;;;;;;;
 ;; Thumbs ;;
