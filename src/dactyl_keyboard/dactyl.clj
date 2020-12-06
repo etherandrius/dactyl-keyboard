@@ -256,7 +256,7 @@
   (apply union
          (concat
           ;; Row connections
-          (for [column (range 0 (dec ncols))
+          (for [column (range -1 (dec ncols))
                 row (range 0 lastrow)]
             (triangle-hulls
              (key-place (inc column) row web-post-tl)
@@ -274,7 +274,7 @@
              (key-place column (inc row) web-post-tr)))
 
           ;; Diagonal connections
-          (for [column (range 0 (dec ncols))
+          (for [column (range -1 (dec ncols))
                 row (range 0 cornerrow)]
             (triangle-hulls
              (key-place column row web-post-br)
@@ -471,7 +471,7 @@
 (def left-wall-z-offset  3)
 
 (defn left-key-position [row direction]
-  (map - (key-position 0 row [(* mount-width -0.5) (* direction mount-height 0.5) 0]) [left-wall-x-offset 0 left-wall-z-offset]) )
+  (map - (key-position -1 row [(* mount-width -0.5) (* direction mount-height 0.5) 0]) [left-wall-x-offset 0 left-wall-z-offset]) )
 
 (defn left-key-place [row direction shape]
   (translate (left-key-position row direction) shape))
@@ -528,7 +528,9 @@
 (def case-walls
   (union
    ; back wall
+   (key-wall-brace -1 0 0 1 web-post-tl -1       0 0 1 web-post-tr)
    (key-wall-brace 0 0 0 1 web-post-tl 0       0 0 1 web-post-tr)
+   (key-wall-brace 0 0 0 1 web-post-tl (dec 0) 0 0 1 web-post-tr)
    (key-wall-brace 1 0 0 1 web-post-tl 1       0 0 1 web-post-tr)
    (key-wall-brace 1 0 0 1 web-post-tl (dec 1) 0 0 1 web-post-tr)
    (key-wall-brace2 2 0 0 0.71 5 web-post-tl 2       0 0 0.705 4 web-post-tr)
@@ -548,24 +550,28 @@
    (for [y (range 1 lastrow)] (key-wall-brace lastcol (dec y) 1 0 web-post-br lastcol y 1 0 web-post-tr))
    (key-wall-brace lastcol cornerrow 0 -1 web-post-br lastcol cornerrow 1 0 web-post-br)
    ; left wall
-   ; TODO fix the bend
    (for [y (range 0 lastrow)] (union (wall-brace (partial left-key-place y 1)       -1 0 web-post (partial left-key-place y -1) -1 0 web-post)
-                                     (hull (key-place 0 y web-post-tl)
-                                           (key-place 0 y web-post-bl)
+                                     (hull (key-place -1 y web-post-tl)
+                                           (key-place -1 y web-post-bl)
                                            (left-key-place y  1 web-post)
                                            (left-key-place y -1 web-post))))
    (for [y (range 1 lastrow)] (union (wall-brace (partial left-key-place (dec y) -1) -1 0 web-post (partial left-key-place y  1) -1 0 web-post)
-                                     (hull (key-place 0 y       web-post-tl)
-                                           (key-place 0 (dec y) web-post-bl)
+                                     (hull (key-place -1 y       web-post-tl)
+                                           (key-place -1 (dec y) web-post-bl)
                                            (left-key-place y        1 web-post)
                                            (left-key-place (dec y) -1 web-post))))
-   (wall-brace (partial key-place 0 0) 0 1 web-post-tl (partial left-key-place 0 1) 0 1 web-post)
+   ; top left corner
+   (wall-brace (partial key-place -1 0) 0 1 web-post-tl (partial left-key-place 0 1) 0 1 web-post)
    (wall-brace (partial left-key-place 0 1) 0 1 web-post (partial left-key-place 0 1) -1 0 web-post)
-   ; front wall
+   ; bottom left corner
+   (wall-brace (partial key-place -1 2) 0 -1 web-post-bl (partial left-key-place 2 -1) 0 -1 web-post)
+   (wall-brace (partial left-key-place 2 -1) 0 -1 web-post (partial left-key-place 2 -1) -1 0 web-post)
+   ; front wall - right
    (key-wall-brace 3 lastrow   0 -1 web-post-bl 3 lastrow 0.5 -1 web-post-br)
    (key-wall-brace 3 lastrow 0.5 -1 web-post-br 4 cornerrow 1 -1 web-post-bl)
    (for [x (range 4 ncols)] (key-wall-brace x cornerrow 0 -1 web-post-bl x       cornerrow 0 -1 web-post-br))
    (for [x (range 5 ncols)] (key-wall-brace x cornerrow 0 -1 web-post-bl (dec x) cornerrow 0 -1 web-post-br))
+
    ; thumb walls
    (wall-brace thumb-mr-place  0 -1 web-post-br thumb-tr-place  0 -1 thumb-post-br)
    (wall-brace thumb-mr-place  0 -1 web-post-br thumb-mr-place  0 -1 web-post-bl)
