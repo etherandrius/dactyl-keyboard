@@ -567,6 +567,7 @@
    (wall-brace (partial key-place -1 2) 0 -1 web-post-bl (partial left-key-place 2 -1) 0 -1 web-post)
    (wall-brace (partial left-key-place 2 -1) 0 -1 web-post (partial left-key-place 2 -1) -1 0 web-post)
    ; front wall - right
+   (key-wall-brace lastcol 0 0 1 web-post-tr lastcol 0 1 0 web-post-tr)
    (key-wall-brace 3 lastrow   0 -1 web-post-bl 3 lastrow 0.5 -1 web-post-br)
    (key-wall-brace 3 lastrow 0.5 -1 web-post-br 4 cornerrow 1 -1 web-post-bl)
    (for [x (range 4 ncols)] (key-wall-brace x cornerrow 0 -1 web-post-bl x       cornerrow 0 -1 web-post-br))
@@ -583,35 +584,35 @@
    (wall-brace thumb-mr-place -1  0 web-post-tl thumb-mr-place  -1  0 web-post-bl)
    (wall-brace thumb-tr-place  0 -1 thumb-post-br (partial key-place 3 lastrow)  0 -1 web-post-bl)
    ; clunky bit on the top left thumb connection  (normal connectors don't work well)
-   (bottom-hull
-     (left-key-place cornerrow -1 (translate (wall-locate2 -1 0 0) web-post))
-     (left-key-place cornerrow -1 (translate (wall-locate3 -1 0 0) web-post))
-     (thumb-ml-place (translate (wall-locate2 -0.3 1 0) web-post-tr))
-     (thumb-ml-place (translate (wall-locate3 -0.3 1 0) web-post-tr)))
-   (hull
-     (left-key-place cornerrow -1 (translate (wall-locate2 -1 0 0) web-post))
-     (left-key-place cornerrow -1 (translate (wall-locate3 -1 0 0) web-post))
-     (thumb-ml-place (translate (wall-locate2 -0.3 1 0) web-post-tr))
-     (thumb-ml-place (translate (wall-locate3 -0.3 1 0) web-post-tr))
-     (thumb-tl-place thumb-post-tl))
-   (hull
-     (left-key-place cornerrow -1 web-post)
-     (left-key-place cornerrow -1 (translate (wall-locate1 -1 0 0) web-post))
-     (left-key-place cornerrow -1 (translate (wall-locate2 -1 0 0) web-post))
-     (left-key-place cornerrow -1 (translate (wall-locate3 -1 0 0) web-post))
-     (thumb-tl-place thumb-post-tl))
-   (hull
-     (left-key-place cornerrow -1 web-post)
-     (left-key-place cornerrow -1 (translate (wall-locate1 -1 0 0) web-post))
-     (key-place 0 cornerrow web-post-bl)
-     (key-place 0 cornerrow (translate (wall-locate1 -1 0 0) web-post-bl))
-     (thumb-tl-place thumb-post-tl))
-   (hull
-     (thumb-ml-place web-post-tr)
-     (thumb-ml-place (translate (wall-locate1 -0.3 1 0) web-post-tr))
-     (thumb-ml-place (translate (wall-locate2 -0.3 1 0) web-post-tr))
-     (thumb-ml-place (translate (wall-locate3 -0.3 1 0) web-post-tr))
-     (thumb-tl-place thumb-post-tl))
+   ; (bottom-hull
+   ;   (left-key-place cornerrow -1 (translate (wall-locate2 -1 0 0) web-post))
+   ;   (left-key-place cornerrow -1 (translate (wall-locate3 -1 0 0) web-post))
+   ;   (thumb-ml-place (translate (wall-locate2 -0.3 1 0) web-post-tr))
+   ;   (thumb-ml-place (translate (wall-locate3 -0.3 1 0) web-post-tr)))
+   ; (hull
+   ;   (left-key-place cornerrow -1 (translate (wall-locate2 -1 0 0) web-post))
+   ;   (left-key-place cornerrow -1 (translate (wall-locate3 -1 0 0) web-post))
+   ;   (thumb-ml-place (translate (wall-locate2 -0.3 1 0) web-post-tr))
+   ;   (thumb-ml-place (translate (wall-locate3 -0.3 1 0) web-post-tr))
+   ;   (thumb-tl-place thumb-post-tl))
+   ; (hull
+   ;   (left-key-place cornerrow -1 web-post)
+   ;   (left-key-place cornerrow -1 (translate (wall-locate1 -1 0 0) web-post))
+   ;   (left-key-place cornerrow -1 (translate (wall-locate2 -1 0 0) web-post))
+   ;   (left-key-place cornerrow -1 (translate (wall-locate3 -1 0 0) web-post))
+   ;   (thumb-tl-place thumb-post-tl))
+   ; (hull
+   ;   (left-key-place cornerrow -1 web-post)
+   ;   (left-key-place cornerrow -1 (translate (wall-locate1 -1 0 0) web-post))
+   ;   (key-place 0 cornerrow web-post-bl)
+   ;   (key-place 0 cornerrow (translate (wall-locate1 -1 0 0) web-post-bl))
+   ;   (thumb-tl-place thumb-post-tl))
+   ; (hull
+   ;   (thumb-ml-place web-post-tr)
+   ;   (thumb-ml-place (translate (wall-locate1 -0.3 1 0) web-post-tr))
+   ;   (thumb-ml-place (translate (wall-locate2 -0.3 1 0) web-post-tr))
+   ;   (thumb-ml-place (translate (wall-locate3 -0.3 1 0) web-post-tr))
+   ;   (thumb-tl-place thumb-post-tl))
   ))
 
 
