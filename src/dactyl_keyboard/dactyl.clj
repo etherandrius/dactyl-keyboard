@@ -467,7 +467,7 @@
 (defn bottom-hull [& p]
   (hull p (bottom 0.001 p)))
 
-(def left-wall-x-offset 10)
+(def left-wall-x-offset 2)
 (def left-wall-z-offset  3)
 
 (defn left-key-position [row direction]
@@ -525,6 +525,7 @@
   (wall-brace2 (partial key-place x1 y1) dx1 dy1 dz1 post1 
               (partial key-place x2 y2) dx2 dy2 dz2 post2))
 
+(def f-w-l-h -5)
 (def case-walls
   (union
    ; back wall
@@ -564,7 +565,10 @@
    (wall-brace (partial key-place -1 0) 0 1 web-post-tl (partial left-key-place 0 1) 0 1 web-post)
    (wall-brace (partial left-key-place 0 1) 0 1 web-post (partial left-key-place 0 1) -1 0 web-post)
    ; bottom left corner
-   (wall-brace (partial key-place -1 2) 0 -1 web-post-bl (partial left-key-place 2 -1) 0 -1 web-post)
+
+   ; this
+   (wall-brace2 (partial key-place -1 2) 0.4 -0.82 -2 web-post-bl (partial left-key-place 2 -1) 0 -1 0 web-post)
+
    (wall-brace (partial left-key-place 2 -1) 0 -1 web-post (partial left-key-place 2 -1) -1 0 web-post)
    ; front wall - right
    (key-wall-brace lastcol 0 0 1 web-post-tr lastcol 0 1 0 web-post-tr)
@@ -572,6 +576,26 @@
    (key-wall-brace 3 lastrow 0.5 -1 web-post-br 4 cornerrow 1 -1 web-post-bl)
    (for [x (range 4 ncols)] (key-wall-brace x cornerrow 0 -1 web-post-bl x       cornerrow 0 -1 web-post-br))
    (for [x (range 5 ncols)] (key-wall-brace x cornerrow 0 -1 web-post-bl (dec x) cornerrow 0 -1 web-post-br))
+   ; front wall - left
+
+
+   (key-wall-brace2 -1 2   0.4 -0.82 -2 web-post-bl -1 2 -1 -1 0 web-post-br)
+   ; (triangle-hulls
+   ;   (key-place -1 2 web-post-br)
+   ;   (key-place 0 2 web-post-bl)
+   ;   (key-place -1 2 (translate (wall-locate1 -1 -1 f-w-l-h) web-post-br))
+   ;   (thumb-tl-place thumb-post-tl)
+   ;   (key-place -1 2 (translate (wall-locate3 -1 -1 f-w-l-h) web-post-br))
+   ;   (thumb-ml-place web-post-tr)
+   ;   (thumb-ml-place (translate (wall-locate1 -0.3 1 0) web-post-tr))
+   ; )
+   ; (bottom-hull
+   ;   (key-place -1 2 (translate (wall-locate3 -1 -1 f-w-l-h) web-post-br))
+   ;   (thumb-ml-place (translate (wall-locate1 -0.3 1 0) web-post-tr))
+   ;   (thumb-ml-place (translate (wall-locate3 -0.3 1 0) web-post-tr))
+   ; )
+
+
 
    ; thumb walls
    (wall-brace thumb-mr-place  0 -1 web-post-br thumb-tr-place  0 -1 thumb-post-br)
